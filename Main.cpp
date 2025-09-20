@@ -8,7 +8,7 @@ enum Difficulty{
     medium,
     hard
 };
-class Board{
+class Board{// --Abdelrahman--
 private:
     vector<vector<char>> grid;
     int size;
@@ -45,7 +45,7 @@ public:
     }
 };
 
-class Player {
+class Player {//--Habiba--
 public:
     Player(const string& name,char symbol){
 
@@ -69,7 +69,7 @@ public:
 
 };
 
-class AiPlayer:public Player{
+class AiPlayer:public Player{// --Marwan--
 public:
     AiPlayer(const string& name , char symbol ,Difficulty diffiuclty){
 
@@ -92,7 +92,7 @@ public:
     }
 };
 
-class Game {
+class Game {//-- Ziad & Jana --
     Game(){
 
     }
