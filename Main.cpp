@@ -2,10 +2,8 @@
 #include <vector>
 #include <string>
 #include <limits>
+
 using namespace std;
-
-
-
 
 enum Difficulty{ 
     Easy,
@@ -77,6 +75,7 @@ public:
         return name;
 
     }
+
    
     char getSymbol()const{                   
          // Getter for player's symbol
@@ -89,6 +88,15 @@ public:
 
     }
 
+};
+class HumanPlayer : public Player {
+public:
+    HumanPlayer(const string& name, char symbol) : Player(name, symbol) {}
+
+    void getMove(int& row, int& col) override {
+        cout << getName() << " turn (" << getSymbol() << "). Enter row and column (0-2): ";
+        cin >> row >> col;
+    }
 };
 
 class HumanPlayer : public Player {
@@ -139,6 +147,7 @@ public:
     }
 };
 
+
 class Game {//-- Ziad & Jana --
 private: 
  // Game class to manage the overall game flow
@@ -146,34 +155,117 @@ private:
     Player* player1;
     Player* player2;
     Player* currentPlayer;
+    bool gameOver;
+    char winner;
 public: 
  // Constructor to initialize the game with default board size and null players
     Game(){
-
+public:
+    Game(){
+        board = Board(3);
+        player1 = player2 = currentPlayer = nullptr;
+        gameOver = false;
+        winner = ' ';
     }
 
-    void start(){
-         // Start the game loop
+    void start() {
+        while (true) {
+            showMenu();
 
+            if (player1 && player2) {
+                gameOver = false;
+                winner = ' ';
+                board.reset();
+                currentPlayer = player1;
+
+
+                while (!gameOver) {
+                    board.display();
+
+                    int row, col;
+                    currentPlayer->getMove(row, col);
+
+                    while (!board.makeMove(row, col, currentPlayer->getSymbol())) {
+                        cout << "Invalid move, try again ";
+                        currentPlayer->getMove(row, col);
+                    }
+
+                    if (checkgameEnd()) {
+                        board.display();
+                        displayResult();
+                        break;
+                    }
+
+                    switchPlayer();
+                }
+                delete player1;
+                delete player2;
+                player1 = player2 = currentPlayer = nullptr;
+            }
+        }
     }
     void showMenu(){
-         // Display the main menu and get user choice
+        int choice;
 
+        cout << "======================" << endl;
+        cout << "1. Player vs Player" << endl;
+        cout << "2. Player vs Computer (Easy)" << endl;
+        cout << "3. Player vs Computer (Hard)" << endl;
+        cout << "4. Exit" << endl;
+        cout << "Select game mode (1-4): ";
+        cin >> choice;
+
+        if (choice == 1) {
+            setupPvP();
+        } else if (choice == 2) {
+            setupPvC(Easy);
+        } else if (choice == 3) {
+            setupPvC(hard);
+        } else if (choice == 4) {
+            cout << "Goodbye!" << endl;
+            exit(0);
+        } else {
+            cout << "Invalid choice! Please try again." << endl;
+            cin.clear();
+            cin.ignore(1000, '\n');
+        }
     }
+
+
     void setupPvP(){
-         // Setup Player vs Player mode
 
+        string name1, name2;
+        cout << "Player 1 name (x): ";
+        cin >> name1;
+        cout << "Player 2 name (o): ";
+        cin >> name2;
+        player1 = new HumanPlayer(name1, 'X');
+        player2 = new HumanPlayer(name2, 'O');
+        currentPlayer = player1;
     }
+
     void setupPvC(Difficulty difficulty){
-         // Setup Player vs AI mode
-
+       // Setup Player vs AI mode
+        string name;
+        cout << "Your name: ";
+        cin >> name;
+        player1 = new HumanPlayer(name, 'X');
+        player2 = new AiPlayer("Computer", 'O', difficulty);
+        currentPlayer = player1;
     }
-    void switchPlayer(){ 
-         // Switch the current player
 
+    void switchPlayer(){
+      // Switch the current player
+        if (currentPlayer == player1) {
+            currentPlayer = player2;
+        } else {
+            currentPlayer = player1;
+        }
     }
-    void handleHumanMove(Player player){
-         // Handle move input for human player
+
+    void handleHumanMove(HumanPlayer player){
+        // Handle move input for human player
+
 
     }
     void handleAiMove(AiPlayer aiplayer){ 
