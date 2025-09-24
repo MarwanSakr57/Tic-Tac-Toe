@@ -156,11 +156,10 @@ private:
     Player* player2;
     Player* currentPlayer;
     bool gameOver;
-    char winner;
-public: 
- // Constructor to initialize the game with default board size and null players
-    Game(){
+    char winner; 
+
 public:
+ // Constructor to initialize the game with default board size and null players
     Game(){
         board = Board(3);
         player1 = player2 = currentPlayer = nullptr;
