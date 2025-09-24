@@ -6,11 +6,11 @@
 using namespace std;
 
 enum Difficulty{ 
+
     Easy,
     medium,
     hard
 };
-
 class Board{// --Abdelrahman--
 private:
  // Board class to manage the game board
@@ -28,7 +28,6 @@ public: // Constructor to initialize the board with a given size (default is 3x3
     
     bool makeMove(int row, int col, char symbol) { 
          // Place a symbol on the board at the specified position if valid
-
     }
 
     bool isValidMove(int row, int col)const {
@@ -52,8 +51,6 @@ public: // Constructor to initialize the board with a given size (default is 3x3
     }
     int getSize()const{
          // Getter for board size
-        
-
     }
 };
 
@@ -85,10 +82,10 @@ public:
     void setName(const string& newName){   
          // Setter for player's name
         name = newName;
-
     }
 
 };
+
 class HumanPlayer : public Player {
 public:
     HumanPlayer(const string& name, char symbol) : Player(name, symbol) {}
@@ -98,19 +95,6 @@ public:
         cin >> row >> col;
     }
 };
-
-class HumanPlayer : public Player {
-    public:     
-     // Constructor to initialize human player with name and symbol
-    HumanPlayer(const string& name , char symbol) : Player(name, symbol){}
-        // Call base class constructor
-        
-    void getMove(int& row,int& col) override{ 
-         // Override to get human player's move from input
-        row = -1;
-        col = -1;
-    }
-  };
 
 class AiPlayer : public Player { // --Marwan--
 private:
@@ -230,7 +214,6 @@ public:
         }
     }
 
-
     void setupPvP(){
 
         string name1, name2;
@@ -261,35 +244,90 @@ public:
             currentPlayer = player1;
         }
     }
-
-    void handleHumanMove(HumanPlayer player){
-        // Handle move input for human player
-
-
+    void handleHumanMove(Player player) {
+        int row, col;
+        while (true) {
+            cout << "Enter row and column (0-2 0-2): ";
+            cin >> row >> col;
+            if (cin.fail() || row < 0 || row > 2 || col < 0 || col > 2 || board[row][col] != ' ') {
+                cout << "Invalid move. Try again.\n";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+            else {
+                board[row][col] = player.getSymbol(); 
+                break;
+            }
+        }
     }
-    void handleAiMove(AiPlayer aiplayer){ 
-         // Handle move for AI player
+    void handleAiMove() {
+     
+        char aiSymbol = 'O';
 
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (board[i][j] == ' ') {
+                    board[i][j] = aiSymbol;
+                    cout << "AI plays at (" << i << ", " << j << ")\n";
+                    return;
+                }
+            }
+        }
     }
-    bool checkgameEnd(){ 
-          // Check if the game has ended (win or draw)
 
+    bool checkgameEnd() {
+        // Check rows and columns
+        for (int i = 0; i < 3; i++) {
+            if (board[i][0] != ' ' && board[i][0] == board[i][1] && board[i][1] == board[i][2]) {
+                winner = board[i][0];
+                return true;
+            }
+            if (board[0][i] != ' ' && board[0][i] == board[1][i] && board[1][i] == board[2][i]) {
+                winner = board[0][i];
+                return true;
+            }
+        }
+
+        // Check diagonals
+        if (board[0][0] != ' ' && board[0][0] == board[1][1] && board[1][1] == board[2][2]) {
+            winner = board[0][0];
+            return true;
+        }
+        if (board[0][2] != ' ' && board[0][2] == board[1][1] && board[1][1] == board[2][0]) {
+            winner = board[0][2];
+            return true;
+        }
+
+        // Check for draw
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (board[i][j] == ' ') return false; 
+            }
+        }
+
+        winner = 'D'; 
+        return true;
     }
-    void displayResult()const{ 
-         // Display the result of the game (win or draw)
 
+    void displayResult() const {
+        if (winner == 'D') {
+            cout << "It's a draw!\n";
+        }
+        else {
+            cout << "Winner is: " << winner << "\n";
+        }
     }
-    void reset(){ 
-         // Reset the game state for a new game
 
+    void reset() {
+        board = vector<vector<char>>(3, vector<char>(3, ' '));
+        winner = ' ';
     }
 };
 
 
-
-int main() {  
-      // Main function to start the game
-
+      
+int main() {
+// Main function to start the game
 
 
     return 0;
