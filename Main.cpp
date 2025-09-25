@@ -10,7 +10,7 @@ using namespace std;
 enum Difficulty{ 
 
     Easy,
-    hard
+    Hard
 };
 class Board{// --Abdelrahman--
 private:
@@ -18,12 +18,22 @@ private:
     vector<vector<char>> grid;
     int size;
 public: // Constructor to initialize the board with a given size (default is 3x3)
-    Board(int s = 3){
-        size = s;
-        grid = vector<vector<char>>(s,vector<char>(s,' '));
-    }
+    Board(int s = 3)
+        : size(s), grid(s,vector<char>(s, ' ')) 
+    {}
+
     void display()const{
-         // Display the current state of the board
+        // Display the current state of the board
+        cout << "\n";
+        for (int i = 0; i < size; ++i) {
+            for (int j = 0; j < size; ++j) {
+                cout << " " << grid[i][j];
+                if (j < size - 1) cout << " |";
+            }
+            cout << "\n";
+            if (i < size - 1) cout << "---+---+---\n";
+        }
+        cout << "\n";
 
     }
     
@@ -35,14 +45,51 @@ public: // Constructor to initialize the board with a given size (default is 3x3
         return false;
     }
 
+    void setCell(int row,int col,char symbol){      // direct setter that doesnt check for valid move(needed in backtracking)
+    grid[row][col] = symbol;
+    }
+
+
     bool isValidMove(int row, int col)const {
-         return (grid[row][col]!=' ');
+         return (row>=0 && row<size && col>=0 && col<size && grid[row][col]==' ');
 
     }
     bool checkWin(char symbol)const {
-         // Check if the given symbol has won the game
-
+    // Check if the given symbol has won the game
+    // check rows
+    for (int i = 0; i < size; i++) {
+        if (grid[i][0] != ' ' &&
+            grid[i][0] == grid[i][1] &&
+            grid[i][1] == grid[i][2] &&
+            grid[i][0] == symbol)
+            return true;
     }
+
+    // check columns
+    for (int j = 0; j < size; j++) {
+        if (grid[0][j] != ' ' &&
+            grid[0][j] == grid[1][j] &&
+            grid[1][j] == grid[2][j] &&
+            grid[0][j] == symbol)
+            return true;
+    }
+
+    // check diagonals
+    if (grid[0][0] != ' ' &&
+        grid[0][0] == grid[1][1] &&
+        grid[1][1] == grid[2][2] &&
+        grid[0][0] == symbol)
+        return true;
+
+    if (grid[0][2] != ' ' &&
+        grid[0][2] == grid[1][1] &&
+        grid[1][1] == grid[2][0] &&
+        grid[0][2] == symbol)
+        return true;
+
+    return false;  
+    }
+
     bool isFull()const {
         for(int i =0;i<size;i++){
             for(int j=0;j<size;j++){
@@ -51,13 +98,16 @@ public: // Constructor to initialize the board with a given size (default is 3x3
         }
         return true;
     }
+
     char getCell(int row,int col)const {
             return grid[row][col];
 
     }
+
     void reset(){ 
-        grid.clear()
+        grid.assign(size,vector<char>(size, ' '));
     }
+
     int getSize()const{
         return size;
     }
@@ -109,30 +159,10 @@ private:
     Difficulty difficulty; // AI difficulty level
 
     int evaluateBoard(const Board& board) const {
-    // check rows
-        for (int i = 0; i < board.getSize(); i++) {
-            if (board.getCell(i,0) != ' ' &&
-                board.getCell(i,0) == board.getCell(i,1) &&
-                board.getCell(i,1) == board.getCell(i,2))
-                return (board.getCell(i,0) == symbol) ? 10 : -10;
-        }
-    // check columns
-        for (int j = 0; j < board.getSize(); j++) {
-            if (board.getCell(0,j) != ' ' &&
-                board.getCell(0,j) == board.getCell(1,j) &&
-                board.getCell(1,j) == board.getCell(2,j))
-                return (board.getCell(0,j) == symbol) ? 10 : -10;
-        }
-    // check diagonals
-        if (board.getCell(0,0) != ' ' &&
-            board.getCell(0,0) == board.getCell(1,1) &&
-            board.getCell(1,1) == board.getCell(2,2))
-            return (board.getCell(0,0) == symbol) ? 10 : -10;
+        char opp = (symbol == 'X') ? 'O' : 'X';
 
-        if (board.getCell(0,2) != ' ' &&
-            board.getCell(0,2) == board.getCell(1,1) &&
-            board.getCell(1,1) == board.getCell(2,0))
-            return (board.getCell(0,2) == symbol) ? 10 : -10;
+        if(board.checkWin(symbol)) return 10;
+        if(board.checkWin(opp)) return -10;
 
     return 0; // no winner
     }
@@ -152,7 +182,7 @@ private:
                 if (board.getCell(i,j) == ' ') {
                     board.makeMove(i,j,symbol);          //try a move
                     best = max(best, minimax(board, depth + 1, false)); //recurse while switching to minimizing
-                    board.makeMove(i,j,' ');             // undo (backtracking)
+                    board.setCell(i,j,' ');             // undo (backtracking)
                 }
             }
         }   return best;
@@ -164,7 +194,7 @@ private:
                 if (board.getCell(i,j) == ' ') {
                     board.makeMove(i,j,opp);             //try a move
                     best =min(best, minimax(board, depth + 1, true)); //recurse while switching to maximizing
-                    board.makeMove(i,j,' ');             // undo (backtracking)
+                    board.setCell(i,j,' ');             // undo (backtracking)
                 }
             }
         }  return best;
@@ -216,7 +246,7 @@ public:
                 if (board.getCell(i,j) == ' ') {
                     board.makeMove(i,j,symbol);                  //try a move
                     int moveVal = minimax(board, 0, false);     //recurse with opponent turn
-                    board.makeMove(i,j,' ');                     // undo
+                    board.setCell(i,j,' ');                     // undo
                     if (moveVal > bestVal) {
                         row = i;
                         col = j;
@@ -302,7 +332,7 @@ public:
         } else if (choice == 2) {
             setupPvC(Easy);
         } else if (choice == 3) {
-            setupPvC(hard);
+            setupPvC(Hard);
         } else if (choice == 4) {
             cout << "Goodbye!" << endl;
             exit(0);
@@ -343,18 +373,18 @@ public:
             currentPlayer = player1;
         }
     }
-    void handleHumanMove(Player player) {
+    void handleHumanMove(HumanPlayer player) {
         int row, col;
         while (true) {
             cout << "Enter row and column (0-2 0-2): ";
             cin >> row >> col;
-            if (cin.fail() || row < 0 || row > 2 || col < 0 || col > 2 || board[row][col] != ' ') {
+            if (cin.fail() || !board.isValidMove(row,col)) {
                 cout << "Invalid move. Try again.\n";
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             else {
-                board[row][col] = player.getSymbol(); 
+                board.makeMove(row,col,player.getSymbol()) ;
                 break;
             }
         }
@@ -362,50 +392,27 @@ public:
     void handleAiMove() {
      
         char aiSymbol = 'O';
-
-        // for (int i = 0; i < 3; i++) {
-        //     for (int j = 0; j < 3; j++) {
-        //         if (board[i][j] == ' ') {
-        //             board[i][j] = aiSymbol;
-        //             cout << "AI plays at (" << i << ", " << j << ")\n";
-        //             return;
-        //         }
-        //     }
-        // }
+    int row, col;
+    player2->getMove(board, row, col);  
+    board.setCell(row, col, 'O');
+    cout << "AI plays at (" << row << ", " << col << ")\n";
     }
 
     bool checkgameEnd() {
-        // Check rows and columns
-        for (int i = 0; i < 3; i++) {
-            if (board[i][0] != ' ' && board[i][0] == board[i][1] && board[i][1] == board[i][2]) {
-                winner = board[i][0];
-                return true;
-            }
-            if (board[0][i] != ' ' && board[0][i] == board[1][i] && board[1][i] == board[2][i]) {
-                winner = board[0][i];
-                return true;
-            }
-        }
+    if (board.checkWin('X')) { 
+        winner = 'X';
+        return true;
+    }
+    if (board.checkWin('O')) {
+        winner = 'O';
+        return true;
+    }
 
-        // Check diagonals
-        if (board[0][0] != ' ' && board[0][0] == board[1][1] && board[1][1] == board[2][2]) {
-            winner = board[0][0];
-            return true;
-        }
-        if (board[0][2] != ' ' && board[0][2] == board[1][1] && board[1][1] == board[2][0]) {
-            winner = board[0][2];
-            return true;
-        }
-
-        // Check for draw
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (board[i][j] == ' ') return false; 
-            }
-        }
-
+    if(board.isFull()){
         winner = 'D'; 
         return true;
+    }
+    return false;
     }
 
     void displayResult() const {
@@ -427,7 +434,10 @@ public:
       
 int main() {
 // Main function to start the game
-srand((unsigned)time(nullptr));
+srand((unsigned)time(nullptr));         //generate seed for rand()
+
+Game game;
+game.start();
 
     return 0;
 }
