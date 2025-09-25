@@ -280,42 +280,42 @@ public:
         winner = ' ';
     }
 
-    void start() {
-        while (true) {
-            showMenu();
+     void start() {
+       while (true) {
+           showMenu();
 
-            if (player1 && player2) {
-                gameOver = false;
-                winner = ' ';
-                board.reset();
-                currentPlayer = player1;
+           if (player1 && player2) {
+               gameOver = false;
+               winner = ' ';
+               board.reset();
+               currentPlayer = player1;
 
+               while (!gameOver) {
+                   board.display();
 
-                while (!gameOver) {
-                    board.display();
+                   // Use handleHumanMove or handleAiMove depending on the current player type
+                   if (dynamic_cast<HumanPlayer*>(currentPlayer)) {
+                       handleHumanMove(*dynamic_cast<HumanPlayer*>(currentPlayer));
+                   }
+                   else {
+                       handleAiMove();
+                   }
 
-                    int row, col;
-                    currentPlayer->getMove(board,row, col);
+                   if (checkgameEnd()) {
+                       board.display();
+                       displayResult();
+                       break;
+                   }
 
-                    while (!board.makeMove(row, col, currentPlayer->getSymbol())) {
-                        cout << "Invalid move, try again ";
-                        currentPlayer->getMove(board,row, col);
-                    }
+                   switchPlayer();
+               }
 
-                    if (checkgameEnd()) {
-                        board.display();
-                        displayResult();
-                        break;
-                    }
-
-                    switchPlayer();
-                }
-                delete player1;
-                delete player2;
-                player1 = player2 = currentPlayer = nullptr;
-            }
-        }
-    }
+               delete player1;
+               delete player2;
+               player1 = player2 = currentPlayer = nullptr;
+           }
+       }
+   }
     void showMenu(){
         int choice;
 
