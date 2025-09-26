@@ -25,13 +25,15 @@ public: // Constructor to initialize the board with a given size (default is 3x3
     void display()const{
         // Display the current state of the board
         cout << "\n";
+        cout<<"  "<< "1"<<"   "<<"2"<<"   "<<"3"<<endl;
         for (int i = 0; i < size; ++i) {
+            cout<<(i+1);
             for (int j = 0; j < size; ++j) {
                 cout << " " << grid[i][j];
                 if (j < size - 1) cout << " |";
             }
             cout << "\n";
-            if (i < size - 1) cout << "---+---+---\n";
+            if (i < size - 1) cout <<" "<<"---+---+---\n";
         }
         cout << "\n";
 
@@ -268,16 +270,14 @@ private:
     Player* player1;
     Player* player2;
     Player* currentPlayer;
-    bool gameOver;
-    char winner; 
+    string winner; 
 
 public:
  // Constructor to initialize the game with default board size and null players
     Game(){
         board = Board(3);
         player1 = player2 = currentPlayer = nullptr;
-        gameOver = false;
-        winner = ' ';
+        winner = " ";
     }
 
      void start() {
@@ -285,12 +285,11 @@ public:
            showMenu();
 
            if (player1 && player2) {
-               gameOver = false;
-               winner = ' ';
+               winner = " ";
                board.reset();
                currentPlayer = player1;
 
-               while (!gameOver) {
+               while (true) {
                    board.display();
 
                    // Use handleHumanMove or handleAiMove depending on the current player type
@@ -344,7 +343,7 @@ public:
     }
 
     void setupPvP(){
-
+        // Setup Player vs Player mode
         string name1, name2;
         cout << "Player 1 name (x): ";
         cin >> name1;
@@ -358,10 +357,22 @@ public:
     void setupPvC(Difficulty difficulty){
        // Setup Player vs AI mode
         string name;
-        cout << "Your name: ";
+        char symbol;
+        cout << "Your name: "<<endl;
         cin >> name;
-        player1 = new HumanPlayer(name, 'X');
-        player2 = new AiPlayer("Computer", 'O', difficulty);
+        while(true){
+        cout <<"choose symbol(X or O):"<<endl;
+        cin>>symbol;
+        if(symbol!='X'&&symbol!='O') {
+            cout << "Invalid Symbol. Try again.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }else{
+            break;
+        }
+    }
+        player1 = new HumanPlayer(name, symbol);
+        player2 = new AiPlayer("Computer", symbol=='X'? 'O':'X', difficulty);
         currentPlayer = player1;
     }
 
@@ -373,11 +384,21 @@ public:
             currentPlayer = player1;
         }
     }
-    void handleHumanMove(HumanPlayer player) {
+    void handleHumanMove(HumanPlayer& player) {
         int row, col;
         while (true) {
-            cout << "Enter row and column (0-2 0-2): ";
-            cin >> row >> col;
+            cout << "Enter row number (1-3): ";
+            cin >> row;
+            row--;
+            if (cin.fail()) {
+                cout << "Invalid move. Try again.\n";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue;
+            }
+            cout << "Enter column number (1-3): ";
+            cin >> col;
+            col--;
             if (cin.fail() || !board.isValidMove(row,col)) {
                 cout << "Invalid move. Try again.\n";
                 cin.clear();
@@ -390,33 +411,39 @@ public:
         }
     }
     void handleAiMove() {
-     
-        char aiSymbol = 'O';
     int row, col;
     player2->getMove(board, row, col);  
-    board.setCell(row, col, 'O');
-    cout << "AI plays at (" << row << ", " << col << ")\n";
+    board.setCell(row, col, player2->getSymbol());
+    cout << "AI plays at (" << row+1 << ", " << col+1 << ")\n";
     }
 
     bool checkgameEnd() {
     if (board.checkWin('X')) { 
-        winner = 'X';
+        if (player1->getSymbol() == 'X') {
+        winner = player1->getName();
+    } else {
+        winner = player2->getName();
+        }
         return true;
     }
-    if (board.checkWin('O')) {
-        winner = 'O';
+    if (board.checkWin('O')) { 
+        if (player1->getSymbol() == 'O') {
+        winner = player1->getName();
+    } else {
+        winner = player2->getName();
+        }
         return true;
     }
 
     if(board.isFull()){
-        winner = 'D'; 
+        winner = "Draw"; 
         return true;
     }
     return false;
     }
 
     void displayResult() const {
-        if (winner == 'D') {
+        if (winner == "Draw") {
             cout << "It's a draw!\n";
         }
         else {
@@ -426,7 +453,7 @@ public:
 
     void reset() {
         board.reset();
-        winner = ' ';
+        winner = " ";
     }
 };
 
